@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Particle Wave Animation | Three.js</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                overflow: hidden;
+                background: #000;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    Oxygen, Ubuntu, Cantarell, sans-serif;
+            }
+
+            canvas {
+                display: block;
+                width: 100vw;
+                height: 100vh;
+            }
+
+            #info {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 14px;
+                z-index: 100;
+                background: rgba(0, 0, 0, 0.5);
+                padding: 15px;
+                border-radius: 8px;
+                backdrop-filter: blur(10px);
+                pointer-events: none;
+                user-select: none;
+            }
+
+            #info h1 {
+                margin: 0 0 10px 0;
+                font-size: 18px;
+                font-weight: 600;
+                color: rgba(255, 100, 200, 1);
+            }
+
+            #info p {
+                margin: 5px 0;
+                font-size: 12px;
+                opacity: 0.8;
+            }
+
+            #stats {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 12px;
+                z-index: 100;
+                background: rgba(0, 0, 0, 0.5);
+                padding: 10px 15px;
+                border-radius: 8px;
+                backdrop-filter: blur(10px);
+                min-width: 120px;
+            }
+
+            #stats .stat-item {
+                display: flex;
+                justify-content: space-between;
+                margin: 3px 0;
+            }
+
+            #stats .stat-label {
+                opacity: 0.7;
+            }
+
+            #stats .stat-value {
+                font-weight: 600;
+                color: rgba(100, 255, 200, 1);
+            }
+
+            .loading {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 24px;
+                z-index: 200;
+                text-align: center;
+            }
+
+            .loading-spinner {
+                width: 50px;
+                height: 50px;
+                border: 4px solid rgba(255, 100, 200, 0.3);
+                border-top-color: rgba(255, 100, 200, 1);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .hidden {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Loading indicator -->
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <div>Initializing Particle System...</div>
+        </div>
+
+        <!-- Info panel -->
+        <div id="info">
+            <h1>🌌 Cosmic Nebula</h1>
+            <p>98,800 particles (380×260 grid)</p>
+            <p>Move mouse to interact with particles!</p>
+            <p style="font-size: 10px; opacity: 0.6; margin-top: 5px">
+                Built with Three.js & Custom GLSL Shaders
+            </p>
+        </div>
+
+        <!-- Stats panel -->
+        <div id="stats">
+            <div class="stat-item">
+                <span class="stat-label">FPS:</span>
+                <span class="stat-value" id="fps">--</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Particles:</span>
+                <span class="stat-value" id="particle-count">--</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Memory:</span>
+                <span class="stat-value" id="memory">--</span>
+            </div>
+        </div>
+
+        <script type="module" src="/src/main.js"></script>
+    </body>
+</html>
