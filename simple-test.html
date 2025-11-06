@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simple Test - Particles</title>
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+                background: #1a1a1a;
+            }
+            #info {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                color: white;
+                font-family: monospace;
+                background: rgba(0, 0, 0, 0.8);
+                padding: 15px;
+                border-radius: 5px;
+                z-index: 100;
+            }
+            .success { color: #0f0; }
+            .error { color: #f00; }
+        </style>
+    </head>
+    <body>
+        <div id="info">
+            <div>Testing Curl Noise Particles...</div>
+            <div id="status"></div>
+        </div>
+
+        <script type="module">
+            const statusEl = document.getElementById('status');
+
+            function log(msg, type = 'info') {
+                console.log(msg);
+                const div = document.createElement('div');
+                div.textContent = msg;
+                div.className = type;
+                statusEl.appendChild(div);
+            }
+
+            async function test() {
+                try {
+                    log('1. Importing Three.js...', 'info');
+                    const THREE = await import('three');
+                    log('✓ Three.js loaded', 'success');
+
+                    log('2. Creating basic scene...', 'info');
+                    const scene = new THREE.Scene();
+                    scene.background = new THREE.Color(0x000033);
+                    log('✓ Scene created', 'success');
+
+                    log('3. Creating camera...', 'info');
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    camera.position.z = 5;
+                    log('✓ Camera created', 'success');
+
+                    log('4. Creating renderer...', 'info');
+                    const renderer = new THREE.WebGLRenderer({ antialias: true });
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    document.body.appendChild(renderer.domElement);
+                    log('✓ Renderer created', 'success');
+
+                    log('5. Creating simple particles...', 'info');
+                    const particleCount = 10000;
+                    const positions = new Float32Array(particleCount * 3);
+
+                    for (let i = 0; i < particleCount; i++) {
+                        positions[i * 3] = (Math.random() - 0.5) * 10;
+                        positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+                        positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+                    }
+
+                    const geometry = new THREE.BufferGeometry();
+                    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                    const material = new THREE.PointsMaterial({
+                        color: 0x00ffff,
+                        size: 0.05,
+                        transparent: true,
+                        opacity: 0.8
+                    });
+
+                    const points = new THREE.Points(geometry, material);
+                    scene.add(points);
+                    log('✓ Particles added', 'success');
+
+                    log('6. Starting animation...', 'info');
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        points.rotation.x += 0.001;
+                        points.rotation.y += 0.002;
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                    log('✓ Animation started', 'success');
+                    log('✓✓✓ SUCCESS! You should see rotating cyan particles!', 'success');
+
+                    // Now try the full curl noise version
+                    setTimeout(async () => {
+                        log('', 'info');
+                        log('7. Now importing CurlNoiseParticles...', 'info');
+                        try {
+                            const { CurlNoiseParticles } = await import('./src/CurlNoiseParticles.js');
+                            log('✓ CurlNoiseParticles module loaded', 'success');
+                            log('You can now try curl-particles.html', 'success');
+                        } catch (err) {
+                            log('✗ Error loading CurlNoiseParticles: ' + err.message, 'error');
+                            console.error(err);
+                        }
+                    }, 2000);
+
+                } catch (error) {
+                    log('✗ ERROR: ' + error.message, 'error');
+                    console.error('Full error:', error);
+                }
+            }
+
+            test();
+        </script>
+    </body>
+</html>

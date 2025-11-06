@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Curl Noise Particle Animation | Three.js</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                overflow: hidden;
+                background: #000;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    Oxygen, Ubuntu, Cantarell, sans-serif;
+            }
+
+            canvas {
+                display: block;
+                width: 100vw;
+                height: 100vh;
+            }
+
+            #info {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 14px;
+                z-index: 100;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 20px;
+                border-radius: 10px;
+                backdrop-filter: blur(10px);
+                max-width: 300px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            #info h1 {
+                margin: 0 0 15px 0;
+                font-size: 20px;
+                font-weight: 600;
+                background: linear-gradient(135deg, #0066ff 0%, #ff00ff 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            #info p {
+                margin: 8px 0;
+                font-size: 13px;
+                opacity: 0.85;
+                line-height: 1.5;
+            }
+
+            #info .highlight {
+                color: #00ffff;
+                font-weight: 600;
+            }
+
+            #controls {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 12px;
+                z-index: 100;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 15px;
+                border-radius: 10px;
+                backdrop-filter: blur(10px);
+                min-width: 250px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            #controls h2 {
+                margin: 0 0 15px 0;
+                font-size: 16px;
+                font-weight: 600;
+                color: #ff00ff;
+            }
+
+            .control-group {
+                margin: 12px 0;
+            }
+
+            .control-group label {
+                display: block;
+                margin-bottom: 5px;
+                opacity: 0.8;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .control-group input[type="range"] {
+                width: 100%;
+                height: 6px;
+                border-radius: 3px;
+                background: rgba(255, 255, 255, 0.2);
+                outline: none;
+                -webkit-appearance: none;
+            }
+
+            .control-group input[type="range"]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #0066ff 0%, #ff00ff 100%);
+                cursor: pointer;
+            }
+
+            .control-group input[type="range"]::-moz-range-thumb {
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #0066ff 0%, #ff00ff 100%);
+                cursor: pointer;
+                border: none;
+            }
+
+            .control-group .value {
+                float: right;
+                color: #00ffff;
+                font-weight: 600;
+            }
+
+            .control-group input[type="color"] {
+                width: 100%;
+                height: 35px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                background: transparent;
+            }
+
+            .loading {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 24px;
+                z-index: 200;
+                text-align: center;
+            }
+
+            .loading-spinner {
+                width: 60px;
+                height: 60px;
+                border: 5px solid rgba(255, 100, 200, 0.2);
+                border-top-color: rgba(255, 100, 200, 1);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .hidden {
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.5s ease;
+            }
+
+            .footer {
+                position: absolute;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                color: rgba(255, 255, 255, 0.5);
+                font-size: 11px;
+                text-align: center;
+                z-index: 100;
+            }
+
+            .footer a {
+                color: #00ffff;
+                text-decoration: none;
+            }
+
+            .footer a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Loading indicator -->
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <div>Initializing Curl Noise Particles...</div>
+        </div>
+
+        <!-- Info panel -->
+        <div id="info">
+            <h1>🌊 Curl Noise Particles</h1>
+            <p>
+                <span class="highlight">100,000</span> particles flowing with
+                <strong>GPU-accelerated curl noise</strong>
+            </p>
+            <p style="font-size: 11px; opacity: 0.6; margin-top: 10px">
+                Curl noise creates divergence-free vector fields that produce
+                fluid-like, swirling motion without clumping or dispersion.
+            </p>
+            <p style="font-size: 11px; opacity: 0.6; margin-top: 8px">
+                ✨ <strong>Features:</strong><br />
+                • Real-time GLSL shaders<br />
+                • Bokeh depth of field<br />
+                • Additive blending<br />
+                • Size attenuation
+            </p>
+        </div>
+
+        <!-- Controls panel -->
+        <div id="controls">
+            <h2>⚙️ Controls</h2>
+
+            <div class="control-group">
+                <label>
+                    Point Size
+                    <span class="value" id="pointSizeValue">2.5</span>
+                </label>
+                <input
+                    type="range"
+                    id="pointSize"
+                    min="0.5"
+                    max="8"
+                    step="0.1"
+                    value="2.5"
+                />
+            </div>
+
+            <div class="control-group">
+                <label>
+                    Noise Scale
+                    <span class="value" id="noiseScaleValue">0.15</span>
+                </label>
+                <input
+                    type="range"
+                    id="noiseScale"
+                    min="0.05"
+                    max="0.5"
+                    step="0.01"
+                    value="0.15"
+                />
+            </div>
+
+            <div class="control-group">
+                <label>
+                    Flow Speed
+                    <span class="value" id="noiseSpeedValue">0.3</span>
+                </label>
+                <input
+                    type="range"
+                    id="noiseSpeed"
+                    min="0.05"
+                    max="1.0"
+                    step="0.05"
+                    value="0.3"
+                />
+            </div>
+
+            <div class="control-group">
+                <label>
+                    Curl Strength
+                    <span class="value" id="curlStrengthValue">2.5</span>
+                </label>
+                <input
+                    type="range"
+                    id="curlStrength"
+                    min="0.5"
+                    max="5.0"
+                    step="0.1"
+                    value="2.5"
+                />
+            </div>
+
+            <div class="control-group">
+                <label>Color 1 (Blue)</label>
+                <input type="color" id="color1" value="#0066ff" />
+            </div>
+
+            <div class="control-group">
+                <label>Color 2 (Pink)</label>
+                <input type="color" id="color2" value="#ff00ff" />
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            Built with Three.js &amp; Custom GLSL Shaders |
+            <a
+                href="https://github.com/stegu/webgl-noise"
+                target="_blank"
+                rel="noopener"
+                >Simplex Noise by Stefan Gustavson</a
+            >
+        </div>
+
+        <script type="module">
+            import { CurlNoiseParticles } from "./src/CurlNoiseParticles.js";
+
+            // Initialize the particle system
+            let particleSystem;
+
+            function init() {
+                particleSystem = new CurlNoiseParticles({
+                    particleCount: 100000,
+                    enableBokeh: true,
+                    color1: 0x0066ff,
+                    color2: 0xff00ff,
+                    pointSize: 2.5,
+                    noiseScale: 0.15,
+                    noiseSpeed: 0.3,
+                    curlStrength: 2.5,
+                    bokehFocus: 5.0,
+                    bokehAperture: 0.008,
+                    bokehMaxBlur: 0.015,
+                });
+
+                // Hide loading screen
+                setTimeout(() => {
+                    document.getElementById("loading").classList.add("hidden");
+                }, 1000);
+
+                // Setup controls
+                setupControls();
+            }
+
+            function setupControls() {
+                // Point Size
+                const pointSizeSlider = document.getElementById("pointSize");
+                const pointSizeValue = document.getElementById("pointSizeValue");
+                pointSizeSlider.addEventListener("input", (e) => {
+                    const value = parseFloat(e.target.value);
+                    pointSizeValue.textContent = value.toFixed(1);
+                    particleSystem.updateConfig({ pointSize: value });
+                });
+
+                // Noise Scale
+                const noiseScaleSlider = document.getElementById("noiseScale");
+                const noiseScaleValue = document.getElementById("noiseScaleValue");
+                noiseScaleSlider.addEventListener("input", (e) => {
+                    const value = parseFloat(e.target.value);
+                    noiseScaleValue.textContent = value.toFixed(2);
+                    particleSystem.updateConfig({ noiseScale: value });
+                });
+
+                // Noise Speed
+                const noiseSpeedSlider = document.getElementById("noiseSpeed");
+                const noiseSpeedValue = document.getElementById("noiseSpeedValue");
+                noiseSpeedSlider.addEventListener("input", (e) => {
+                    const value = parseFloat(e.target.value);
+                    noiseSpeedValue.textContent = value.toFixed(2);
+                    particleSystem.updateConfig({ noiseSpeed: value });
+                });
+
+                // Curl Strength
+                const curlStrengthSlider = document.getElementById("curlStrength");
+                const curlStrengthValue = document.getElementById("curlStrengthValue");
+                curlStrengthSlider.addEventListener("input", (e) => {
+                    const value = parseFloat(e.target.value);
+                    curlStrengthValue.textContent = value.toFixed(1);
+                    particleSystem.updateConfig({ curlStrength: value });
+                });
+
+                // Color 1
+                const color1Input = document.getElementById("color1");
+                color1Input.addEventListener("input", (e) => {
+                    const color = parseInt(e.target.value.replace("#", ""), 16);
+                    particleSystem.updateConfig({ color1: color });
+                });
+
+                // Color 2
+                const color2Input = document.getElementById("color2");
+                color2Input.addEventListener("input", (e) => {
+                    const color = parseInt(e.target.value.replace("#", ""), 16);
+                    particleSystem.updateConfig({ color2: color });
+                });
+            }
+
+            // Start when DOM is ready
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", init);
+            } else {
+                init();
+            }
+
+            // Cleanup on page unload
+            window.addEventListener("beforeunload", () => {
+                if (particleSystem) {
+                    particleSystem.dispose();
+                }
+            });
+        </script>
+    </body>
+</html>

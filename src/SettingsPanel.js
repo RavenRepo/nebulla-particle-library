@@ -15,6 +15,11 @@ export class SettingsPanel {
       particleSize: 3.5,
       particleCount: "98,800 (380×260)",
 
+      // Animation Mode
+      useCurlNoise: false,
+      curlStrength: 2.5,
+      noiseScale: 0.15,
+
       // Wave Parameters
       waveFrequency1: 0.07,
       waveAmplitude1: 5.5,
@@ -88,6 +93,22 @@ export class SettingsPanel {
       .name("Particle Count")
       .disable();
     particleFolder.open();
+
+    // Animation Mode Folder
+    const animationFolder = this.gui.addFolder("🌊 Animation Mode");
+    animationFolder
+      .add(this.settings, "useCurlNoise")
+      .name("Use Curl Noise")
+      .onChange((value) => this.toggleCurlNoise(value));
+    animationFolder
+      .add(this.settings, "curlStrength", 0.5, 5.0, 0.1)
+      .name("Curl Strength")
+      .onChange((value) => this.updateCurlStrength(value));
+    animationFolder
+      .add(this.settings, "noiseScale", 0.05, 0.5, 0.01)
+      .name("Noise Scale")
+      .onChange((value) => this.updateNoiseScale(value));
+    animationFolder.open();
 
     // Wave Parameters Folder
     const waveFolder = this.gui.addFolder("🌊 Wave Displacement");
@@ -267,11 +288,39 @@ export class SettingsPanel {
   }
 
   /**
-   * Update particle size in real-time
+   * Update particle size
    */
-  updateParticleSize(size) {
+  updateParticleSize(value) {
     if (this.app.particleSystem) {
-      this.app.particleSystem.setParticleSize(size);
+      this.app.particleSystem.setParticleSize(value);
+    }
+  }
+
+  /**
+   * Toggle curl noise mode
+   */
+  toggleCurlNoise(value) {
+    if (this.app.particleSystem) {
+      this.app.particleSystem.setUseCurlNoise(value);
+      console.log("🌊 Curl Noise:", value ? "ENABLED" : "DISABLED");
+    }
+  }
+
+  /**
+   * Update curl strength
+   */
+  updateCurlStrength(value) {
+    if (this.app.particleSystem) {
+      this.app.particleSystem.setCurlStrength(value);
+    }
+  }
+
+  /**
+   * Update noise scale
+   */
+  updateNoiseScale(value) {
+    if (this.app.particleSystem) {
+      this.app.particleSystem.setNoiseScale(value);
     }
   }
 

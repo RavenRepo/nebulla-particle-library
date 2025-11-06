@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Integration Example - Curl Noise Particles</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                overflow-x: hidden;
+                background: #000;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    Oxygen, Ubuntu, Cantarell, sans-serif;
+                color: #fff;
+            }
+
+            /* Particle container */
+            #particle-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 0;
+                pointer-events: none;
+            }
+
+            /* Content overlay */
+            .content {
+                position: relative;
+                z-index: 1;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 40px 20px;
+            }
+
+            .hero {
+                text-align: center;
+                max-width: 800px;
+                backdrop-filter: blur(10px);
+                background: rgba(0, 0, 0, 0.5);
+                padding: 60px 40px;
+                border-radius: 20px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            }
+
+            h1 {
+                font-size: 48px;
+                font-weight: 700;
+                margin-bottom: 20px;
+                background: linear-gradient(135deg, #0066ff 0%, #ff00ff 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            p {
+                font-size: 18px;
+                line-height: 1.8;
+                color: rgba(255, 255, 255, 0.8);
+                margin-bottom: 30px;
+            }
+
+            .cta-button {
+                display: inline-block;
+                padding: 15px 40px;
+                font-size: 16px;
+                font-weight: 600;
+                color: #fff;
+                background: linear-gradient(135deg, #0066ff 0%, #ff00ff 100%);
+                border: none;
+                border-radius: 50px;
+                cursor: pointer;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                text-decoration: none;
+                box-shadow: 0 10px 30px rgba(255, 0, 255, 0.3);
+            }
+
+            .cta-button:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 15px 40px rgba(255, 0, 255, 0.5);
+            }
+
+            .features {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 30px;
+                margin-top: 80px;
+                max-width: 1200px;
+                width: 100%;
+            }
+
+            .feature-card {
+                background: rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(10px);
+                padding: 30px;
+                border-radius: 15px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: transform 0.3s ease, border-color 0.3s ease;
+            }
+
+            .feature-card:hover {
+                transform: translateY(-5px);
+                border-color: rgba(0, 102, 255, 0.5);
+            }
+
+            .feature-card h3 {
+                font-size: 24px;
+                margin-bottom: 15px;
+                color: #0066ff;
+            }
+
+            .feature-card p {
+                font-size: 14px;
+                margin-bottom: 0;
+            }
+
+            .code-example {
+                background: rgba(0, 0, 0, 0.8);
+                border: 1px solid rgba(0, 102, 255, 0.3);
+                border-radius: 10px;
+                padding: 20px;
+                margin-top: 60px;
+                max-width: 800px;
+                width: 100%;
+                overflow-x: auto;
+            }
+
+            .code-example h3 {
+                color: #00ffff;
+                margin-bottom: 15px;
+                font-size: 16px;
+            }
+
+            .code-example pre {
+                margin: 0;
+                color: #e0e0e0;
+                font-family: "Courier New", monospace;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            .code-example code {
+                color: #ff00ff;
+            }
+
+            @media (max-width: 768px) {
+                h1 {
+                    font-size: 36px;
+                }
+
+                p {
+                    font-size: 16px;
+                }
+
+                .hero {
+                    padding: 40px 30px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Particle animation container -->
+        <div id="particle-container"></div>
+
+        <!-- Page content -->
+        <div class="content">
+            <div class="hero">
+                <h1>Welcome to Curl Noise</h1>
+                <p>
+                    Experience the mesmerizing flow of 100,000 particles
+                    animated with GPU-accelerated curl noise. This is a live
+                    integration example showing how to overlay content on top of
+                    the particle system.
+                </p>
+                <a href="#features" class="cta-button">Explore Features</a>
+            </div>
+
+            <div class="features" id="features">
+                <div class="feature-card">
+                    <h3>🚀 GPU Accelerated</h3>
+                    <p>
+                        All particle calculations happen on the GPU using custom
+                        GLSL shaders</p>, ensuring smooth 60 FPS performance even
+                        with massive particle counts.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🌊 Curl Noise</h3>
+                    <p>
+                        Mathematical curl of 3D noise creates divergence-free
+                        vector fields, producing natural fluid-like motion
+                        without clumping or dispersion.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>📸 Bokeh Effect</h3>
+                    <p>
+                        Professional depth-of-field post-processing creates
+                        cinematic blur on foreground and background particles.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>⚡ Optimized</h3>
+                    <p>
+                        Efficient rendering with THREE.Points, additive
+                        blending, and size attenuation for realistic depth
+                        perception.
+                    </p>
+                </div>
+            </div>
+
+            <div class="code-example">
+                <h3>💻 Integration Code</h3>
+                <pre><code>import { CurlNoiseParticles } from './src/CurlNoiseParticles.js';
+
+// Create particle system in a specific container
+const particles = new CurlNoiseParticles({
+    containerElement: document.getElementById('particle-container'),
+    particleCount: 100000,
+    enableBokeh: true,
+    color1: 0x0066ff,
+    color2: 0xff00ff,
+    pointSize: 2.5,
+    curlStrength: 2.5,
+});
+
+// Update configuration in real-time
+particles.updateConfig({
+    curlStrength: 3.5,
+    noiseSpeed: 0.5,
+});
+
+// Clean up when done
+particles.dispose();</code></pre>
+            </div>
+        </div>
+
+        <script type="module">
+            import { CurlNoiseParticles } from "./src/CurlNoiseParticles.js";
+
+            // Initialize particle system
+            const particleSystem = new CurlNoiseParticles({
+                containerElement: document.getElementById("particle-container"),
+                particleCount: 100000,
+                enableBokeh: true,
+                color1: 0x0066ff,
+                color2: 0xff00ff,
+                pointSize: 2.5,
+                noiseScale: 0.15,
+                noiseSpeed: 0.3,
+                curlStrength: 2.5,
+                bokehFocus: 8.0,
+                bokehAperture: 0.008,
+                bokehMaxBlur: 0.015,
+            });
+
+            // Optional: Add dynamic camera movement
+            let time = 0;
+            function updateCamera() {
+                time += 0.01;
+                particleSystem.camera.position.x = Math.sin(time * 0.3) * 2;
+                particleSystem.camera.position.y = Math.cos(time * 0.2) * 1.5;
+                particleSystem.camera.lookAt(0, 0, 0);
+                requestAnimationFrame(updateCamera);
+            }
+            updateCamera();
+
+            // Smooth scroll
+            document.querySelector('a[href="#features"]').addEventListener("click", (e) => {
+                e.preventDefault();
+                document.getElementById("features").scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                });
+            });
+
+            // Clean up on page unload
+            window.addEventListener("beforeunload", () => {
+                particleSystem.dispose();
+            });
+
+            // Log performance info
+            console.log("🎨 Curl Noise Particle System Initialized");
+            console.log("   Particle Count:", particleSystem.config.particleCount);
+            console.log("   Bokeh Enabled:", particleSystem.config.enableBokeh);
+            console.log("   Camera Position:", particleSystem.camera.position);
+        </script>
+    </body>
+</html>

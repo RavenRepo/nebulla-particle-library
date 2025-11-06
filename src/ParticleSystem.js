@@ -83,21 +83,71 @@ float snoise(vec3 v) {
   return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
 }
 
+// ===== CURL NOISE =====
+vec3 curlNoise(vec3 p) {
+  const float e = 0.1;
+  float n1, n2, a, b;
+
+  // Curl X component
+  n1 = snoise(vec3(p.x, p.y + e, p.z));
+  n2 = snoise(vec3(p.x, p.y - e, p.z));
+  a = (n1 - n2) / (2.0 * e);
+
+  n1 = snoise(vec3(p.x, p.y, p.z + e));
+  n2 = snoise(vec3(p.x, p.y, p.z - e));
+  b = (n1 - n2) / (2.0 * e);
+  float curlX = a - b;
+
+  // Curl Y component
+  n1 = snoise(vec3(p.x, p.y, p.z + e));
+  n2 = snoise(vec3(p.x, p.y, p.z - e));
+  a = (n1 - n2) / (2.0 * e);
+
+  n1 = snoise(vec3(p.x + e, p.y, p.z));
+  n2 = snoise(vec3(p.x - e, p.y, p.z));
+  b = (n1 - n2) / (2.0 * e);
+  float curlY = a - b;
+
+  // Curl Z component
+  n1 = snoise(vec3(p.x + e, p.y, p.z));
+  n2 = snoise(vec3(p.x - e, p.y, p.z));
+  a = (n1 - n2) / (2.0 * e);
+
+  n1 = snoise(vec3(p.x, p.y + e, p.z));
+  n2 = snoise(vec3(p.x, p.y - e, p.z));
+  b = (n1 - n2) / (2.0 * e);
+  float curlZ = a - b;
+
+  return vec3(curlX, curlY, curlZ);
+}
+
+uniform float uUseCurlNoise;
+uniform float uCurlStrength;
+uniform float uNoiseScale;
+
 void main() {
   vec3 pos = position;
 
-  // ===== DIAGONAL WAVE DISPLACEMENT =====
-  // Precise implementation from visual breakdown
-  float diag = pos.x * 0.7 - pos.z * 0.5;
-  float wave = sin(diag * 0.07 - uTime * 0.7) * 5.5;
-  float wave2 = sin(diag * 0.12 - uTime * 0.91) * 3.0;
+  // Choose between wave mode and curl noise mode
+  if (uUseCurlNoise > 0.5) {
+    // ===== CURL NOISE MODE =====
+    vec3 noisePos = pos * uNoiseScale + uTime * 0.3;
+    vec3 curl = curlNoise(noisePos);
+    pos += curl * uCurlStrength;
+  } else {
+    // ===== DIAGONAL WAVE DISPLACEMENT =====
+    // Precise implementation from visual breakdown
+    float diag = pos.x * 0.7 - pos.z * 0.5;
+    float wave = sin(diag * 0.07 - uTime * 0.7) * 5.5;
+    float wave2 = sin(diag * 0.12 - uTime * 0.91) * 3.0;
 
-  // ===== 3D SIMPLEX NOISE TURBULENCE (Multi-octave FBM) =====
-  float n1 = snoise(vec3(pos.x * 0.04, pos.z * 0.04, uTime * 0.25)) * 4.0;
-  float n2 = snoise(vec3(pos.x * 0.10, pos.z * 0.10, uTime * 0.40)) * 1.5;
+    // ===== 3D SIMPLEX NOISE TURBULENCE (Multi-octave FBM) =====
+    float n1 = snoise(vec3(pos.x * 0.04, pos.z * 0.04, uTime * 0.25)) * 4.0;
+    float n2 = snoise(vec3(pos.x * 0.10, pos.z * 0.10, uTime * 0.40)) * 1.5;
 
-  // ===== COMBINE DISPLACEMENT =====
-  pos.y = wave + wave2 + n1 + n2;
+    // ===== COMBINE DISPLACEMENT =====
+    pos.y = wave + wave2 + n1 + n2;
+  }
 
   // ===== MOUSE INTERACTION =====
   if (uMouseActive > 0.5) {
@@ -195,6 +245,11 @@ export class ParticleSystem {
       waveFrequencyX: config.waveFrequencyX || 0.08,
       waveFrequencyZ: config.waveFrequencyZ || 0.12,
       waveAmplitude: config.waveAmplitude || 6.0,
+
+      // Curl noise parameters
+      useCurlNoise: config.useCurlNoise || false,
+      curlStrength: config.curlStrength || 2.5,
+      noiseScale: config.noiseScale || 0.15,
 
       // Visual parameters
       minAlpha: config.minAlpha || 0.0,
@@ -302,6 +357,9 @@ export class ParticleSystem {
         uMouseActive: { value: 0.0 },
         uInteractionRadius: { value: 8.0 },
         uInteractionStrength: { value: 5.0 },
+        uUseCurlNoise: { value: this.config.useCurlNoise ? 1.0 : 0.0 },
+        uCurlStrength: { value: this.config.curlStrength },
+        uNoiseScale: { value: this.config.noiseScale },
       },
 
       // Rendering properties for glowing particles
@@ -413,6 +471,39 @@ export class ParticleSystem {
    */
   resetTime() {
     this.time = 0;
+  }
+
+  /**
+   * Toggle between wave and curl noise modes
+   * @param {boolean} useCurl - Whether to use curl noise
+   */
+  setUseCurlNoise(useCurl) {
+    this.config.useCurlNoise = useCurl;
+    if (this.material && this.material.uniforms) {
+      this.material.uniforms.uUseCurlNoise.value = useCurl ? 1.0 : 0.0;
+    }
+  }
+
+  /**
+   * Update curl strength
+   * @param {number} strength - Curl strength value
+   */
+  setCurlStrength(strength) {
+    this.config.curlStrength = strength;
+    if (this.material && this.material.uniforms) {
+      this.material.uniforms.uCurlStrength.value = strength;
+    }
+  }
+
+  /**
+   * Update noise scale
+   * @param {number} scale - Noise scale value
+   */
+  setNoiseScale(scale) {
+    this.config.noiseScale = scale;
+    if (this.material && this.material.uniforms) {
+      this.material.uniforms.uNoiseScale.value = scale;
+    }
   }
 }
 

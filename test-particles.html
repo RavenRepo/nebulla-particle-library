@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Test - Curl Noise Particles</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                overflow: hidden;
+                background: #000;
+                font-family: monospace;
+            }
+
+            #debug {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                color: #0f0;
+                background: rgba(0, 0, 0, 0.8);
+                padding: 10px;
+                font-size: 12px;
+                z-index: 1000;
+                max-width: 400px;
+            }
+
+            .error {
+                color: #f00;
+            }
+
+            .success {
+                color: #0f0;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="debug">Loading...</div>
+
+        <script type="module">
+            const debug = document.getElementById('debug');
+
+            function log(msg, isError = false) {
+                console.log(msg);
+                const div = document.createElement('div');
+                div.textContent = msg;
+                div.className = isError ? 'error' : 'success';
+                debug.appendChild(div);
+            }
+
+            try {
+                log('Step 1: Importing Three.js...');
+                const THREE = await import('three');
+                log('✓ Three.js imported successfully');
+
+                log('Step 2: Importing CurlNoiseParticles...');
+                const { CurlNoiseParticles } = await import('./src/CurlNoiseParticles.js');
+                log('✓ CurlNoiseParticles imported successfully');
+
+                log('Step 3: Creating particle system...');
+                const particles = new CurlNoiseParticles({
+                    particleCount: 10000, // Start small
+                    enableBokeh: false,   // Disable for simplicity
+                    color1: 0x0066ff,
+                    color2: 0xff00ff,
+                    pointSize: 3.0,
+                });
+                log('✓ Particle system created');
+
+                // Expose for debugging
+                window.particleSystem = particles;
+
+                log('✓ SUCCESS! Check if you see particles.');
+                log('Open console (F12) for more details.');
+
+            } catch (error) {
+                log('✗ ERROR: ' + error.message, true);
+                log('Stack: ' + error.stack, true);
+                console.error('Full error:', error);
+            }
+        </script>
+    </body>
+</html>
